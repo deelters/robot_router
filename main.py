@@ -93,7 +93,7 @@ def router_handler(key_name):
                 else:
                     matched_func()
             except TypeError:
-                matched_func()
+                invalid_args_format()
             break
     else:
         not_matched_handler()
@@ -117,9 +117,12 @@ def not_matched_handler():
     print('没有匹配到相应的处理方法！')
 
 
+def invalid_args_format():
+    print('参数格式错误！')
+
+
 @robot_msg_route(['#help', '#帮助'], sub_find=True)
-def show_help(*args):
-    print(*args)
+def show_help():
     print("help")
 
 
