@@ -51,7 +51,7 @@ def robot_msg_route(key_name_args, all_case_matching=False, sub_find=False):
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
-        add_func_route(key_name_args, wrapper, all_case_matching, sub_find)
+        add_func_route(key_name_args, func, all_case_matching, sub_find)
 
         return wrapper
 
@@ -82,7 +82,14 @@ def router_handler(key_name):
         if matched_func is not None:
             try:
                 if func is matched_from_sub_find:
-                    matched_func(get_msg_args(key_name))
+                    args_tuple = get_msg_args(key_name)
+                    func_args_count = matched_func.__code__.co_argcount
+                    given_args_count = len(args_tuple)
+                    if func_args_count > given_args_count:
+                        tmp_list = list(args_tuple)
+                        tmp_list[given_args_count:] = [''] * (func_args_count - given_args_count)
+                        args_tuple = tuple(tmp_list)
+                    matched_func(*args_tuple)
                 else:
                     matched_func()
             except TypeError:
@@ -116,9 +123,9 @@ def show_help(*args):
     print("help")
 
 
-@robot_msg_route('#每日打卡')
-def sign_everyday():
-    print('打卡成功')
+@robot_msg_route('#login', sub_find=True)
+def sign_everyday(username, password):
+    print(f'{username} {password} 打卡成功！')
 
 
 if __name__ == '__main__':
