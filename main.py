@@ -12,28 +12,33 @@ single_func_maps = dict()
 # 包含关键词 -> 方法 映射
 sub_find_func_maps = dict()
 
+# 取消参数校验关键词
+cancel_args_check_set = set()
 
-def add_func_route(key_name_args, func, all_case_matching=False, sub_find=False):
-    def add_matched_func(_key_name_args, _func, _sub_find):
+
+def add_func_route(key_name_args, func, all_case_matching=False, sub_find=False, args_check=True):
+    def add_matched_func(_key_name_args, _func, _sub_find, _args_check):
         if _key_name_args in (single_func_maps, sub_find_func_maps):
             return
         if _sub_find:
             sub_find_func_maps[_key_name_args] = _func
+            if not _args_check:
+                cancel_args_check_set.add(_key_name_args)
         else:
             single_func_maps[_key_name_args] = _func
 
     if isinstance(key_name_args, str):
-        add_matched_func(key_name_args, func, sub_find)
+        add_matched_func(key_name_args, func, sub_find, args_check)
         if not all_case_matching:
-            add_matched_func(key_name_args.lower(), func, sub_find)
+            add_matched_func(key_name_args.lower(), func, sub_find, args_check)
     elif isinstance(key_name_args, list):
         for item in key_name_args:
             if not isinstance(item, str):
                 raise RuntimeError('不支持的列表内映射参数类型！')
             else:
-                add_matched_func(item, func, sub_find)
+                add_matched_func(item, func, sub_find, args_check)
                 if not all_case_matching:
-                    add_matched_func(item.lower(), func, sub_find)
+                    add_matched_func(item.lower(), func, sub_find, args_check)
     else:
         raise RuntimeError('不支持的映射参数类型！')
 
@@ -85,7 +90,7 @@ def router_handler(key_name):
                     args_tuple = get_msg_args(key_name)
                     func_args_count = matched_func.__code__.co_argcount
                     given_args_count = len(args_tuple)
-                    if func_args_count > given_args_count:
+                    if key_name in cancel_args_check_set and func_args_count > given_args_count:
                         tmp_list = list(args_tuple)
                         tmp_list[given_args_count:] = [''] * (func_args_count - given_args_count)
                         args_tuple = tuple(tmp_list)
