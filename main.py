@@ -15,7 +15,7 @@ sub_find_func_maps = dict()
 
 def add_func_route(key_name_args, func, all_case_matching=False, sub_find=False):
     def add_matched_func(_key_name_args, _func, _sub_find):
-        if _key_name_args in single_func_maps or _key_name_args in sub_find_func_maps:
+        if _key_name_args in (single_func_maps, sub_find_func_maps):
             return
         if _sub_find:
             sub_find_func_maps[_key_name_args] = _func
